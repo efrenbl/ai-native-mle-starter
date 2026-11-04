@@ -1,0 +1,34 @@
+# secrets
+.env
+.env.*
+!.env.example
+
+# generated lakehouse data (make seed regenerates it deterministically)
+lakehouse/raw/
+lakehouse/features/
+lakehouse/_manifest.json
+
+# MLflow local stores (the stack uses Docker volumes; these catch local runs)
+mlruns/
+mlartifacts/
+mlflow.db
+*.db
+
+# skills are symlinked from skills/ by scripts/install-skills.sh (make skills)
+.claude/skills/
+.agents/skills/
+.claude/settings.local.json
+
+# python / tools
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+.ruff_cache/
+
+# evals output
+evals/output/
+evals/node_modules/
+.promptfoo/
+
+.DS_Store

@@ -1,0 +1,25 @@
+[project]
+name = "ai-native-mle-starter"
+version = "0.1.0"
+description = "Demo repo: skills + MCP servers on top of a versioned ML standard (MLflow + parquet/DuckDB)."
+requires-python = ">=3.12,<3.13"
+license = "MIT"
+# Dependencies are pinned in platform/requirements/*.txt (compiled with uv) and
+# installed into the Docker image. This file only configures tooling.
+
+[tool.ruff]
+line-length = 120
+target-version = "py312"
+src = ["src", "mcp", "scripts", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "SIM", "BLE"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["mle_starter", "standards_mcp"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src", "mcp", "scripts"]
+addopts = "-ra"
+filterwarnings = ["ignore::DeprecationWarning", "ignore::FutureWarning", "ignore::UserWarning"]

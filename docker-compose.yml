@@ -1,0 +1,118 @@
+# Layer 1 (platform) + layer 3 (MCP) for the AI-native ML engineering starter.
+#
+#   make up      -> mlflow + standards-mcp
+#   make seed    -> trainer (one-off) generates data and logs 3 runs
+#   make test    -> test (one-off)
+#   docker compose --profile gateway up -d gateway   -> optional LiteLLM proxy for evals
+#
+# All ports bind to 127.0.0.1 only. Nothing here needs the internet after images are built.
+
+name: ai-native-mle-starter
+
+x-app: &app
+  image: ai-native-mle-starter-app:local
+  build:
+    context: .
+    dockerfile: platform/Dockerfile
+    target: app
+  user: "${HOST_UID:-1000}:${HOST_GID:-1000}"
+  environment:
+    MLFLOW_TRACKING_URI: http://mlflow:5000
+    MLFLOW_DISABLE_AGENT_HINT: "1"
+
+services:
+  mlflow:
+    image: ghcr.io/mlflow/mlflow:v3.17.2
+    command:
+      - mlflow
+      - server
+      - --host=0.0.0.0
+      - --port=5000
+      - --workers=1
+      - --backend-store-uri=sqlite:////mlflow/db/mlflow.db
+      - --artifacts-destination=/mlflow/artifacts
+      - --serve-artifacts
+      # The server rejects unknown Host headers (DNS-rebinding protection).
+      # `mlflow` is the in-network name the trainer and standards-mcp use.
+      - --allowed-hosts=localhost,localhost:*,127.0.0.1,127.0.0.1:*,mlflow,mlflow:*
+    environment:
+      MLFLOW_DISABLE_AGENT_HINT: "1"
+    volumes:
+      - mlflow-db:/mlflow/db
+      - mlflow-artifacts:/mlflow/artifacts
+    ports:
+      - "127.0.0.1:${MLFLOW_PORT:-5050}:5000"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:5000/health', timeout=3)"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 10s
+    restart: unless-stopped
+
+  standards-mcp:
+    <<: *app
+    command: ["python", "-m", "standards_mcp.server", "--transport", "streamable-http"]
+    environment:
+      MLFLOW_TRACKING_URI: http://mlflow:5000
+      MLFLOW_DISABLE_AGENT_HINT: "1"
+      MCP_HOST: 0.0.0.0
+      MCP_PORT: "8765"
+    volumes:
+      # Read-only: the MCP server can see the repo (standard, model_versions,
+      # lakehouse, its own code) but cannot change any of it.
+      - .:/workspace:ro
+    ports:
+      - "127.0.0.1:${STANDARDS_MCP_PORT:-8765}:8765"
+    depends_on:
+      mlflow:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8765/healthz', timeout=3)"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 5s
+    restart: unless-stopped
+
+  trainer:
+    <<: *app
+    profiles: ["jobs"]
+    command: ["python", "-m", "mle_starter.train", "--help"]
+    volumes:
+      # Read-write: training/seed write lakehouse/ (generation) and scaffolded folders.
+      - .:/workspace
+    depends_on:
+      mlflow:
+        condition: service_healthy
+
+  test:
+    image: ai-native-mle-starter-test:local
+    build:
+      context: .
+      dockerfile: platform/Dockerfile
+      target: test
+    profiles: ["test"]
+    user: "${HOST_UID:-1000}:${HOST_GID:-1000}"
+    command: ["pytest", "-q"]
+    environment:
+      MLFLOW_DISABLE_AGENT_HINT: "1"
+    volumes:
+      - .:/workspace
+
+  # Optional: AI gateway for the eval module (evals/). Pins `eval-model` to a dated model ID.
+  gateway:
+    image: ghcr.io/berriai/litellm:v1.106.6
+    profiles: ["gateway"]
+    command: ["--config", "/app/config.yaml", "--port", "4000"]
+    environment:
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      LITELLM_MASTER_KEY: ${LITELLM_MASTER_KEY:-}
+    volumes:
+      - ./evals/litellm.yaml:/app/config.yaml:ro
+    ports:
+      - "127.0.0.1:${GATEWAY_PORT:-4000}:4000"
+
+volumes:
+  mlflow-db:
+  mlflow-artifacts:

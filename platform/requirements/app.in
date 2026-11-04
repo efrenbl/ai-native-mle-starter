@@ -1,0 +1,14 @@
+# Runtime deps for the app image (trainer + standards-mcp). Top-level pins only;
+# platform/requirements/app.txt is the fully pinned lock compiled from this file:
+#   uv pip compile --universal --python-version 3.12 platform/requirements/app.in -o platform/requirements/app.txt
+mlflow-skinny==3.17.2
+mcp==1.30.0
+duckdb==1.5.6
+pandas==3.0.6
+pyarrow==25.0.1
+numpy==2.5.3
+scikit-learn==1.9.1
+lightgbm==4.7.0
+pyyaml==6.0.3
+# sklearn models are saved with skops (safe load, no arbitrary pickle).
+skops==0.16.0
