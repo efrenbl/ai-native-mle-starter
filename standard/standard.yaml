@@ -1,0 +1,77 @@
+# The ML standard for this repo. Layer 2 of 4: it sits on top of the platform
+# (MLflow + parquet/DuckDB) and is what the MCP server exposes to the agent.
+#
+# Rules for changing this file:
+#   - Every change bumps `version` (semver).
+#   - MAJOR = someone has to change how they work (a new required tag, a renamed
+#     field, a removed library). Runs logged under an older MAJOR fail the contract.
+#   - MINOR = additive and backwards compatible (a new optional estimator, docs).
+#   - PATCH = wording only.
+#   - Claude Code is denied write access to this file (.claude/settings.json).
+#     A human edits it, bumps the version, and opens a PR.
+
+version: 1.0.0
+
+layout:
+  root: model_versions
+  # Experiments live in model_versions/<model_version>/<experiment_id>/
+  experiment_path: "model_versions/{model_version}/{experiment_id}"
+  template_dir: model_versions/_TEMPLATE
+  required_files: [config.yaml]
+  model_version_pattern: "^v[0-9]+$"
+  experiment_id_pattern: "^[a-z][a-z0-9_]{2,40}$"
+
+# Model types this repo trains. One MLflow experiment per model type.
+model_types:
+  credit_default:
+    description: Probability that a (synthetic) applicant defaults within 12 months.
+    target: default_12m
+    primary_metric: roc_auc
+    registered_model: credit_default
+
+# Supported libraries ("structured lane"). Anything else is rejected before training.
+libraries:
+  sklearn:
+    estimators: [logistic_regression, random_forest, hist_gradient_boosting]
+  lightgbm:
+    estimators: [lgbm_classifier]
+
+tracking:
+  experiment_name: "{model_type}"
+  run_name: "{model_version}.{experiment_id}"
+  required_metrics: [roc_auc, pr_auc, log_loss, brier]
+
+# Every training run must carry these MLflow tags. The training entrypoint reads
+# them back from the tracking server and FAILS the run if any is missing or invalid.
+tag_contract:
+  - key: demo.model_type
+    description: Model type; must be one of `model_types` and equal the MLflow experiment name.
+    allowed_from: model_types
+  - key: demo.model_version
+    description: Model version folder, e.g. v1.
+    pattern: "^v[0-9]+$"
+  - key: demo.experiment_id
+    description: Experiment folder name.
+    pattern: "^[a-z][a-z0-9_]{2,40}$"
+  - key: demo.standard_version
+    description: Version of this standard the run was produced under; MAJOR must match the current standard.
+    pattern: "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    same_major_as_standard: true
+  - key: demo.data_snapshot
+    description: Lakehouse snapshot id from lakehouse/_manifest.json.
+    pattern: "^synth-[a-z0-9-]+$"
+  - key: demo.lib
+    description: Training library; must be a supported library.
+    allowed_from: libraries
+
+registry:
+  # Aliases the promote-model skill may set. Promotion requires a passing contract.
+  allowed_aliases: [challenger, champion]
+
+lakehouse:
+  root: lakehouse
+  tables:
+    raw: "raw/application_month=*/part-*.parquet"
+    features: "features/split=*/part-*.parquet"
+  manifest: lakehouse/_manifest.json
+  query_row_cap: 500

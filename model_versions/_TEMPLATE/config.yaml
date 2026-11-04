@@ -1,0 +1,34 @@
+# Experiment config. Copied by `make scaffold MV=<v> EXP=<id>` (or the
+# scaffold-experiment skill). model_version and experiment_id MUST equal the folder names.
+model_type: credit_default
+model_version: "{{model_version}}"
+experiment_id: "{{experiment_id}}"
+description: "TODO: one sentence on the hypothesis this experiment tests."
+baseline_experiment_id: baseline   # compare against model_versions/<mv>/baseline
+
+data:
+  table: features                  # lakehouse table; train/test split is out-of-time
+  features:
+    - age
+    - employment_years
+    - income_log
+    - loan_amount_scu
+    - loan_to_income
+    - loan_term_months
+    - credit_history_years
+    - num_open_accounts
+    - num_delinquencies_2y
+    - debt_to_income
+    - credit_utilization
+    - home_ownership
+    - loan_purpose
+    - region
+
+model:
+  lib: lightgbm                    # sklearn | lightgbm   (see standard/standard.yaml)
+  estimator: lgbm_classifier       # sklearn: logistic_regression | random_forest | hist_gradient_boosting
+  params:
+    n_estimators: 300
+    learning_rate: 0.05
+    num_leaves: 31
+    random_state: 7
