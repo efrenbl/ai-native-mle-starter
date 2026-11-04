@@ -4,7 +4,8 @@
 
   - v1.baseline           logistic regression                  (passes the contract)
   - v1.lgbm_monotonic     LightGBM with monotone constraints   (passes, better metrics)
-  - v1.lgbm_missing_tags  LightGBM that "forgets" two tags     (FAILED: breaks the contract)
+  - v1.lgbm_missing_tags  identical to lgbm_monotonic, but the run "forgets" two tags
+                          (FAILED: breaks the contract; same metrics, different verdict)
 
 Idempotent: data is regenerated only when missing, and an experiment is skipped
 when a run with its run name already exists.

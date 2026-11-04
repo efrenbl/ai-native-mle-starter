@@ -9,7 +9,7 @@ export HOST_UID := $(shell id -u)
 export HOST_GID := $(shell id -g)
 RUN_JOB := $(COMPOSE) --profile jobs run --rm trainer
 
-.PHONY: help up down seed train scaffold promote test lint validate-skills skills doctor reset status
+.PHONY: help up down seed train scaffold promote test skills doctor reset status demo-reset
 
 help: ## Show this help
 	@grep -hE '^[a-zA-Z_-]+:.*## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*## "}; {printf "  \033[36mmake %-16s\033[0m %s\n", $$1, $$2}'
@@ -56,3 +56,11 @@ reset: ## DESTRUCTIVE: stop everything, delete MLflow volumes and generated parq
 	$(COMPOSE) --profile jobs --profile test --profile gateway down -v
 	rm -rf lakehouse/raw lakehouse/features lakehouse/_manifest.json
 	@echo "Reset done. Run: make up && make seed"
+
+demo-reset: ## DESTRUCTIVE: clean slate for the live demo (drops rehearsal experiments, reseeds, runs doctor)
+	@# Only removes UNTRACKED folders under model_versions/ (rehearsal experiments); tracked edits are kept.
+	@git clean -fd -- model_versions
+	$(MAKE) reset
+	$(MAKE) up
+	$(MAKE) seed
+	$(MAKE) doctor

@@ -66,6 +66,10 @@ claude         # trust the folder, approve the project MCP server "standards-mcp
 
 Then ask: *"Review the v1 experiments. Is anything ready to promote?"*
 
+**Presenting this live?** Follow [`DEMO.md`](DEMO.md): a 15-minute run sheet with the exact
+prompts, what the audience should see, and a fallback command for every step.
+`make demo-reset` gives you a clean slate between rehearsals.
+
 With images already built, `make up && make seed` takes well under a minute (about 25 s
 on an M-series laptop). The first `make up` downloads and builds images. **Do it before
 the venue:** after `make up`, nothing in the stack needs the internet; only Claude Code does.
@@ -139,6 +143,7 @@ make promote RUN=<run_id> ALIAS=challenger       # dry run; add CONFIRM=yes to a
 make test                                        # ruff + skill validation + pytest, in Docker
 make down                                        # stop (keeps MLflow data)
 make reset                                       # DESTRUCTIVE: delete MLflow volumes and generated data
+make demo-reset                                  # DESTRUCTIVE: reset + drop rehearsal experiments + up + seed + doctor
 ```
 
 ## Optional modules

@@ -5,6 +5,8 @@ from __future__ import annotations
 import json
 
 import pyarrow.parquet as pq
+import pytest
+from mlflow.exceptions import MlflowException
 
 from mle_starter import datagen, promote, seed
 
@@ -58,6 +60,19 @@ def test_broken_run_is_failed_and_flagged(seeded):
     assert broken.data.tags["demo.contract_status"] == "failed"
 
 
+def test_broken_run_differs_from_monotonic_only_in_tags(seeded, std):
+    """Demo claim: same model and metrics, rejected only because it breaks the standard."""
+    from mle_starter.standard import load_experiment
+
+    good = load_experiment("model_versions/v1/lgbm_monotonic", std).config
+    bad = load_experiment("model_versions/v1/lgbm_missing_tags", std).config
+    assert good["data"] == bad["data"] and good["model"] == bad["model"]
+    assert set(bad) - set(good) == {"demo_fault"}
+    g, b = seeded["runs"]["v1.lgbm_monotonic"].data.metrics, seeded["runs"]["v1.lgbm_missing_tags"].data.metrics
+    for m in ("roc_auc", "pr_auc", "log_loss", "brier"):
+        assert b[m] == pytest.approx(g[m], abs=1e-6)
+
+
 def test_only_passing_runs_register_a_model(seeded):
     client = seeded["client"]
     registered = {v.run_id for v in client.search_model_versions("name='credit_default'")}
@@ -78,7 +93,7 @@ def test_promote_is_gated(seeded):
     assert promote.promote(good, "production", confirm=True)["status"] == "refused"
     dry = promote.promote(good, "challenger", confirm=False)
     assert dry["status"] == "dry_run"
-    with __import__("pytest").raises(Exception):  # dry run must not have set the alias
+    with pytest.raises(MlflowException):  # dry run must not have set the alias
         seeded["client"].get_model_version_by_alias("credit_default", "challenger")
     done = promote.promote(good, "challenger", confirm=True)
     assert done["status"] == "promoted"

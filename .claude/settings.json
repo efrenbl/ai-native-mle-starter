@@ -22,7 +22,8 @@
     ],
     "ask": [
       "Bash(make promote *)",
-      "Bash(make reset)"
+      "Bash(make reset)",
+      "Bash(make demo-reset)"
     ],
     "deny": [
       "Edit(/lakehouse/**)",

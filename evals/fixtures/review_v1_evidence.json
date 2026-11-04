@@ -90,14 +90,14 @@
         "is_model_type": true,
         "runs": [
           {
-            "run_id": "92e1a17052554dbe8b2ac9b215e1e1eb",
+            "run_id": "aa573325f3374dc094269b0dd550e5b5",
             "run_name": "v1.lgbm_missing_tags",
             "experiment": "credit_default",
             "status": "FAILED",
-            "start_time_ms": 1793818125471,
+            "start_time_ms": 1793822948514,
             "primary_metric": {
-              "roc_auc": 0.7829298904359538,
-              "pr_auc": 0.3632782519238968
+              "roc_auc": 0.7896977943505877,
+              "pr_auc": 0.37242992626354277
             },
             "contract_ok": false,
             "contract_missing": [
@@ -105,11 +105,11 @@
             ]
           },
           {
-            "run_id": "9e6ebc8b94814eaf8aceac7a0190c9f0",
+            "run_id": "79818f868f9c46aeae6f8c40a3829e97",
             "run_name": "v1.lgbm_monotonic",
             "experiment": "credit_default",
             "status": "FINISHED",
-            "start_time_ms": 1793818123980,
+            "start_time_ms": 1793822946731,
             "primary_metric": {
               "roc_auc": 0.7896977943505877,
               "pr_auc": 0.37242992626354277
@@ -118,11 +118,11 @@
             "contract_missing": []
           },
           {
-            "run_id": "4d801664e8164f06ada999def15e0e81",
+            "run_id": "9cebc45291294169abfe422e1b80e1d0",
             "run_name": "v1.baseline",
             "experiment": "credit_default",
             "status": "FINISHED",
-            "start_time_ms": 1793818122057,
+            "start_time_ms": 1793822944347,
             "primary_metric": {
               "roc_auc": 0.7799171821145222,
               "pr_auc": 0.3131941339431742
@@ -137,7 +137,7 @@
   "check_run_contract": {
     "v1.lgbm_monotonic": {
       "ok": true,
-      "run_id": "9e6ebc8b94814eaf8aceac7a0190c9f0",
+      "run_id": "79818f868f9c46aeae6f8c40a3829e97",
       "run_name": "v1.lgbm_monotonic",
       "status": "FINISHED",
       "contract": {
@@ -165,7 +165,7 @@
     },
     "v1.lgbm_missing_tags": {
       "ok": true,
-      "run_id": "92e1a17052554dbe8b2ac9b215e1e1eb",
+      "run_id": "aa573325f3374dc094269b0dd550e5b5",
       "run_name": "v1.lgbm_missing_tags",
       "status": "FAILED",
       "contract": {
@@ -202,7 +202,7 @@
   "compare_runs": {
     "ok": true,
     "baseline": {
-      "run_id": "4d801664e8164f06ada999def15e0e81",
+      "run_id": "9cebc45291294169abfe422e1b80e1d0",
       "run_name": "v1.baseline",
       "contract_ok": true
     },
@@ -218,7 +218,7 @@
     ],
     "runs": [
       {
-        "run_id": "9e6ebc8b94814eaf8aceac7a0190c9f0",
+        "run_id": "79818f868f9c46aeae6f8c40a3829e97",
         "run_name": "v1.lgbm_monotonic",
         "status": "FINISHED",
         "contract_ok": true,
@@ -255,7 +255,7 @@
         }
       },
       {
-        "run_id": "92e1a17052554dbe8b2ac9b215e1e1eb",
+        "run_id": "aa573325f3374dc094269b0dd550e5b5",
         "run_name": "v1.lgbm_missing_tags",
         "status": "FAILED",
         "contract_ok": false,
@@ -264,31 +264,31 @@
         ],
         "metrics": {
           "roc_auc": {
-            "value": 0.7829298904359538,
+            "value": 0.7896977943505877,
             "baseline": 0.7799171821145222,
-            "delta": 0.003012708321431634,
-            "relative_delta": 0.003862856711610761,
+            "delta": 0.009780612236065522,
+            "relative_delta": 0.012540577974635963,
             "improved": true
           },
           "pr_auc": {
-            "value": 0.3632782519238968,
+            "value": 0.37242992626354277,
             "baseline": 0.3131941339431742,
-            "delta": 0.0500841179807226,
-            "relative_delta": 0.15991397204715793,
+            "delta": 0.059235792320368574,
+            "relative_delta": 0.18913442462851585,
             "improved": true
           },
           "log_loss": {
-            "value": 0.22845218737222958,
+            "value": 0.22586596185921418,
             "baseline": 0.23449394437662152,
-            "delta": -0.00604175700439194,
-            "relative_delta": -0.025765087539694642,
+            "delta": -0.008627982517407345,
+            "relative_delta": -0.036794052572845605,
             "improved": true
           },
           "brier": {
-            "value": 0.06177126248799349,
+            "value": 0.06107919402745954,
             "baseline": 0.06415717852547972,
-            "delta": -0.002385916037486231,
-            "relative_delta": -0.03718860605035298,
+            "delta": -0.0030779844980201865,
+            "relative_delta": -0.047975683606438196,
             "improved": true
           }
         }

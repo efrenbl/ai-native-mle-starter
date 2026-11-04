@@ -1,7 +1,7 @@
 model_type: credit_default
 model_version: v1
 experiment_id: lgbm_missing_tags
-description: "Same model as lgbm_monotonic, but the run 'forgets' part of the tag contract."
+description: "Identical to lgbm_monotonic (same data, params and seed), but the run 'forgets' part of the tag contract."
 baseline_experiment_id: baseline
 
 data:
@@ -31,6 +31,12 @@ model:
     num_leaves: 31
     min_child_samples: 50
     random_state: 7
+    monotone_constraints:
+      debt_to_income: 1
+      credit_utilization: 1
+      num_delinquencies_2y: 1
+      loan_to_income: 1
+      employment_years: -1
 
 # DEMO ONLY: simulates a training script that does not follow the standard, so that
 # `make seed` leaves one broken run for the review-experiment skill to catch.

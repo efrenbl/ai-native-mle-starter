@@ -58,7 +58,7 @@ tests:
         value: demo.data_snapshot # the missing tag
         metric: names_missing_tag
       - type: icontains
-        value: 92e1a17052554dbe8b2ac9b215e1e1eb # the broken run's ID
+        value: aa573325f3374dc094269b0dd550e5b5 # the broken run's ID
         metric: cites_broken_run
       - type: llm-rubric
         value: >-
@@ -88,7 +88,7 @@ tests:
       task: Is v1.lgbm_monotonic better than the baseline?
     assert:
       - type: icontains
-        value: 9e6ebc8b94814eaf8aceac7a0190c9f0 # the compared run's ID
+        value: 79818f868f9c46aeae6f8c40a3829e97 # the compared run's ID
         metric: cites_compared_run
       - type: regex
         value: "[Ll]og.?[Ll]oss" # mentions a lower-is-better metric, not only AUC

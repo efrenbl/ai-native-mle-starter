@@ -10,7 +10,7 @@ need it.
 | Evidence | Deterministic assertions first: must name the missing tag, must cite a run ID, must not claim it wrote anything, must not just dump the raw evidence. |
 | Guardrail | `llm-rubric` is a secondary check, reported on its own row so judge noise cannot hide a deterministic regression. |
 | Model | Calls go through a local LiteLLM gateway to the alias `eval-model`, which points at a **dated** model ID (`evals/litellm.yaml`). |
-| Inputs | `fixtures/review_v1_evidence.json` holds real `standards-mcp` tool outputs captured from `make seed`, so the eval tests the procedure, not tool calling. |
+| Inputs | `fixtures/review_v1_evidence.json` holds real `standards-mcp` tool outputs captured from `make seed` by `evals/capture_fixture.py`, so the eval tests the procedure, not tool calling. After re-capturing, update the two run IDs asserted in `promptfooconfig.yaml` (the script prints them). |
 
 ## Why pin a dated model ID
 

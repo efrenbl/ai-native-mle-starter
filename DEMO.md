@@ -9,13 +9,13 @@ Prompts are in English (they match the repo). Narrate in any language.
 ## Before the talk (at home / hotel, with internet)
 
 ```bash
-make reset && make up && make seed && make doctor     # all checks green
+make demo-reset                                       # drops rehearsal folders, reset + up + seed + doctor: all green
 uv run --with mcp==1.30.0 scripts/verify_mcp.py       # 7/7 checks passed
 claude                                                # trust folder, approve standards-mcp, then /exit
 claude mcp list                                       # standards-mcp ... ✔ Connected
 ```
 
-- Delete any rehearsal experiment folders (`git status` must be clean) and re-run `make reset && make up && make seed`, so the live run IDs are fresh.
+- After every rehearsal, run `make demo-reset` again: it removes rehearsal experiment folders (e.g. `lgbm_shallow`) and reseeds, so the live run IDs are fresh and the scaffold step works again.
 - Terminal font ≥ 18 pt; two panes: **left** Claude Code, **right** a shell. Browser tab on <http://localhost:5050>.
 - Keep the [README troubleshooting table](README.md#troubleshooting) open in a tab.
 - **Fallback for everything:** the right-hand shell runs every step with plain `make` commands.
@@ -69,7 +69,8 @@ Prompt:
 **Audience sees:** `list_experiments`, then `check_run_contract` per run, then `compare_runs`
 against `v1.baseline`. The report cites full run IDs and flags `v1.lgbm_missing_tags` as
 **FAILED / not ready: missing `demo.data_snapshot`, invalid `demo.standard_version=0.9.0`**,
-even though its AUC is above the baseline. Nothing is written.
+even though its metrics are **identical** to `v1.lgbm_monotonic` (same data, params and seed;
+a test guarantees it). Same model, different verdict: only the standard tells them apart. Nothing is written.
 Say: *an MCP cannot be better than the standard it exposes; this check exists because the standard does.*
 FALLBACK: `uv run --with mcp==1.30.0 scripts/verify_mcp.py` (shows the same contract result),
 or in MLflow UI open run `v1.lgbm_missing_tags` → Tags.
