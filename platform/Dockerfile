@@ -17,6 +17,9 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONPATH=/workspace/src:/workspace/mcp \
     MLE_REPO_ROOT=/workspace \
     MLFLOW_DISABLE_AGENT_HINT=1 \
+    MLFLOW_DISABLE_TELEMETRY=true \
+    DO_NOT_TRACK=true \
+    GIT_PYTHON_REFRESH=quiet \
     HOME=/tmp
 
 COPY platform/requirements/app.txt /tmp/requirements/app.txt

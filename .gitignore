@@ -32,3 +32,6 @@ evals/node_modules/
 .promptfoo/
 
 .DS_Store
+
+# optional memory MCP server data
+.memory/

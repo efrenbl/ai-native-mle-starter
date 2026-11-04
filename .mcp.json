@@ -2,7 +2,7 @@
   "mcpServers": {
     "standards-mcp": {
       "type": "http",
-      "url": "http://localhost:${STANDARDS_MCP_PORT:-8765}/mcp"
+      "url": "http://localhost:8765/mcp"
     }
   }
 }

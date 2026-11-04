@@ -19,6 +19,8 @@ x-app: &app
   environment:
     MLFLOW_TRACKING_URI: http://mlflow:5000
     MLFLOW_DISABLE_AGENT_HINT: "1"
+    MLFLOW_DISABLE_TELEMETRY: "true"
+    DO_NOT_TRACK: "true"
 
 services:
   mlflow:
@@ -37,6 +39,8 @@ services:
       - --allowed-hosts=localhost,localhost:*,127.0.0.1,127.0.0.1:*,mlflow,mlflow:*
     environment:
       MLFLOW_DISABLE_AGENT_HINT: "1"
+      MLFLOW_DISABLE_TELEMETRY: "true"
+      DO_NOT_TRACK: "true"
     volumes:
       - mlflow-db:/mlflow/db
       - mlflow-artifacts:/mlflow/artifacts
@@ -56,6 +60,8 @@ services:
     environment:
       MLFLOW_TRACKING_URI: http://mlflow:5000
       MLFLOW_DISABLE_AGENT_HINT: "1"
+      MLFLOW_DISABLE_TELEMETRY: "true"
+      DO_NOT_TRACK: "true"
       MCP_HOST: 0.0.0.0
       MCP_PORT: "8765"
     volumes:
@@ -97,6 +103,8 @@ services:
     command: ["pytest", "-q"]
     environment:
       MLFLOW_DISABLE_AGENT_HINT: "1"
+      MLFLOW_DISABLE_TELEMETRY: "true"
+      DO_NOT_TRACK: "true"
     volumes:
       - .:/workspace
 
