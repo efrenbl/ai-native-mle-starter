@@ -1,0 +1,99 @@
+# Skill eval: review-experiment, baseline (no skill) vs with-skill, same pinned model.
+# The signal is the DELTA in pass rate between the two prompts, not either number alone.
+#
+#   docker compose --profile gateway up -d gateway      # needs ANTHROPIC_API_KEY in .env
+#   set -a; source .env; set +a
+#   npx promptfoo@0.125.1 eval -c evals/promptfooconfig.yaml -o evals/output/results.json
+#   python3 evals/delta.py evals/output/results.json
+#
+# This makes PAID model calls (2 prompts x 3 cases + rubric grading).
+
+description: review-experiment skill - baseline vs with-skill
+
+prompts:
+  - id: file://prompts.py:baseline
+    label: baseline
+  - id: file://prompts.py:with_skill
+    label: with_skill
+
+providers:
+  - id: openai:chat:eval-model
+    config:
+      apiBaseUrl: http://localhost:4000/v1
+      apiKeyEnvar: LITELLM_MASTER_KEY
+      omitDefaults: true
+      max_tokens: 2000
+
+defaultTest:
+  options:
+    # Grader for llm-rubric goes through the same gateway and the same pinned alias.
+    provider:
+      id: openai:chat:eval-model
+      config:
+        apiBaseUrl: http://localhost:4000/v1
+        apiKeyEnvar: LITELLM_MASTER_KEY
+        omitDefaults: true
+  assert:
+    # Deterministic checks first: these are the evidence.
+    - type: regex
+      value: "\\b[0-9a-f]{32}\\b" # cites at least one full MLflow run ID
+      metric: cites_run_id
+    - type: not-regex
+      # JavaScript regex: no inline (?i) flag, so case variants are spelled out.
+      value: "\\b(I|I've|I have|[Ww]e've|[Ww]e have)\\s+(now\\s+|already\\s+|just\\s+)?([Ss]et|[Uu]pdated|[Ww]rote|[Ww]ritten|[Tt]agged|[Rr]e-?tagged|[Rr]egistered|[Pp]romoted|[Ff]ixed|[Aa]dded|[Ll]ogged)\\b"
+      metric: claims_no_writes
+    # Canary: the evidence already contains every run ID and tag name, so an answer
+    # that just echoes it back would pass the checks above. This one fails a dump.
+    - type: not-icontains
+      value: '"check_run_contract": {'
+      metric: not_a_dump
+
+tests:
+  - description: review the whole experiment and say what is ready
+    vars:
+      evidence: fixtures/review_v1_evidence.json
+      task: Review the v1 experiments. Is anything ready to promote?
+    assert:
+      - type: icontains
+        value: demo.data_snapshot # the missing tag
+        metric: names_missing_tag
+      - type: icontains
+        value: 92e1a17052554dbe8b2ac9b215e1e1eb # the broken run's ID
+        metric: cites_broken_run
+      - type: llm-rubric
+        value: >-
+          The answer says run v1.lgbm_missing_tags is not ready because it fails the tag contract
+          (missing demo.data_snapshot, invalid demo.standard_version), and does not recommend
+          promoting it regardless of its metrics.
+
+  - description: review only the broken run
+    vars:
+      evidence: fixtures/review_v1_evidence.json
+      task: Can you check run v1.lgbm_missing_tags against our standard?
+    assert:
+      - type: icontains
+        value: demo.data_snapshot
+        metric: names_missing_tag
+      - type: icontains
+        value: demo.standard_version
+        metric: names_invalid_tag
+      - type: llm-rubric
+        value: >-
+          The answer explains the fix is in training code/config followed by a new training run,
+          and does not suggest editing MLflow tags by hand.
+
+  - description: compare the better variant with the baseline
+    vars:
+      evidence: fixtures/review_v1_evidence.json
+      task: Is v1.lgbm_monotonic better than the baseline?
+    assert:
+      - type: icontains
+        value: 9e6ebc8b94814eaf8aceac7a0190c9f0 # the compared run's ID
+        metric: cites_compared_run
+      - type: regex
+        value: "[Ll]og.?[Ll]oss" # mentions a lower-is-better metric, not only AUC
+        metric: mentions_log_loss
+      - type: llm-rubric
+        value: >-
+          The answer reports roc_auc and at least one other metric as deltas against the baseline
+          with the correct direction (log_loss and brier: lower is better).

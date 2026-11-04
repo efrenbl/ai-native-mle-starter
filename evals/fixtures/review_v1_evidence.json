@@ -1,0 +1,298 @@
+{
+  "get_standard": {
+    "ok": true,
+    "standard": {
+      "version": "1.0.0",
+      "tag_contract": [
+        {
+          "key": "demo.model_type",
+          "description": "Model type; must be one of `model_types` and equal the MLflow experiment name.",
+          "allowed_from": "model_types"
+        },
+        {
+          "key": "demo.model_version",
+          "description": "Model version folder, e.g. v1.",
+          "pattern": "^v[0-9]+$"
+        },
+        {
+          "key": "demo.experiment_id",
+          "description": "Experiment folder name.",
+          "pattern": "^[a-z][a-z0-9_]{2,40}$"
+        },
+        {
+          "key": "demo.standard_version",
+          "description": "Version of this standard the run was produced under; MAJOR must match the current standard.",
+          "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+          "same_major_as_standard": true
+        },
+        {
+          "key": "demo.data_snapshot",
+          "description": "Lakehouse snapshot id from lakehouse/_manifest.json.",
+          "pattern": "^synth-[a-z0-9-]+$"
+        },
+        {
+          "key": "demo.lib",
+          "description": "Training library; must be a supported library.",
+          "allowed_from": "libraries"
+        }
+      ],
+      "tracking": {
+        "experiment_name": "{model_type}",
+        "run_name": "{model_version}.{experiment_id}",
+        "required_metrics": [
+          "roc_auc",
+          "pr_auc",
+          "log_loss",
+          "brier"
+        ]
+      }
+    }
+  },
+  "list_experiments": {
+    "ok": true,
+    "standard_version": "1.0.0",
+    "local_experiments": [
+      {
+        "model_version": "v1",
+        "experiment_id": "baseline",
+        "path": "model_versions/v1/baseline",
+        "run_name": "v1.baseline",
+        "valid": true,
+        "problems": [],
+        "model_type": "credit_default",
+        "lib": "sklearn"
+      },
+      {
+        "model_version": "v1",
+        "experiment_id": "lgbm_missing_tags",
+        "path": "model_versions/v1/lgbm_missing_tags",
+        "run_name": "v1.lgbm_missing_tags",
+        "valid": true,
+        "problems": [],
+        "model_type": "credit_default",
+        "lib": "lightgbm"
+      },
+      {
+        "model_version": "v1",
+        "experiment_id": "lgbm_monotonic",
+        "path": "model_versions/v1/lgbm_monotonic",
+        "run_name": "v1.lgbm_monotonic",
+        "valid": true,
+        "problems": [],
+        "model_type": "credit_default",
+        "lib": "lightgbm"
+      }
+    ],
+    "mlflow_experiments": [
+      {
+        "experiment_id": "1",
+        "name": "credit_default",
+        "is_model_type": true,
+        "runs": [
+          {
+            "run_id": "92e1a17052554dbe8b2ac9b215e1e1eb",
+            "run_name": "v1.lgbm_missing_tags",
+            "experiment": "credit_default",
+            "status": "FAILED",
+            "start_time_ms": 1793818125471,
+            "primary_metric": {
+              "roc_auc": 0.7829298904359538,
+              "pr_auc": 0.3632782519238968
+            },
+            "contract_ok": false,
+            "contract_missing": [
+              "demo.data_snapshot"
+            ]
+          },
+          {
+            "run_id": "9e6ebc8b94814eaf8aceac7a0190c9f0",
+            "run_name": "v1.lgbm_monotonic",
+            "experiment": "credit_default",
+            "status": "FINISHED",
+            "start_time_ms": 1793818123980,
+            "primary_metric": {
+              "roc_auc": 0.7896977943505877,
+              "pr_auc": 0.37242992626354277
+            },
+            "contract_ok": true,
+            "contract_missing": []
+          },
+          {
+            "run_id": "4d801664e8164f06ada999def15e0e81",
+            "run_name": "v1.baseline",
+            "experiment": "credit_default",
+            "status": "FINISHED",
+            "start_time_ms": 1793818122057,
+            "primary_metric": {
+              "roc_auc": 0.7799171821145222,
+              "pr_auc": 0.3131941339431742
+            },
+            "contract_ok": true,
+            "contract_missing": []
+          }
+        ]
+      }
+    ]
+  },
+  "check_run_contract": {
+    "v1.lgbm_monotonic": {
+      "ok": true,
+      "run_id": "9e6ebc8b94814eaf8aceac7a0190c9f0",
+      "run_name": "v1.lgbm_monotonic",
+      "status": "FINISHED",
+      "contract": {
+        "ok": true,
+        "standard_version": "1.0.0",
+        "missing": [],
+        "invalid": [],
+        "checked": [
+          "demo.model_type",
+          "demo.model_version",
+          "demo.experiment_id",
+          "demo.standard_version",
+          "demo.data_snapshot",
+          "demo.lib"
+        ]
+      },
+      "present_tags": {
+        "demo.model_type": "credit_default",
+        "demo.model_version": "v1",
+        "demo.experiment_id": "lgbm_monotonic",
+        "demo.standard_version": "1.0.0",
+        "demo.data_snapshot": "synth-g1-s42-n50000",
+        "demo.lib": "lightgbm"
+      }
+    },
+    "v1.lgbm_missing_tags": {
+      "ok": true,
+      "run_id": "92e1a17052554dbe8b2ac9b215e1e1eb",
+      "run_name": "v1.lgbm_missing_tags",
+      "status": "FAILED",
+      "contract": {
+        "ok": false,
+        "standard_version": "1.0.0",
+        "missing": [
+          "demo.data_snapshot"
+        ],
+        "invalid": [
+          {
+            "key": "demo.standard_version",
+            "value": "0.9.0",
+            "reason": "MAJOR differs from current standard 1.0.0"
+          }
+        ],
+        "checked": [
+          "demo.model_type",
+          "demo.model_version",
+          "demo.experiment_id",
+          "demo.standard_version",
+          "demo.data_snapshot",
+          "demo.lib"
+        ]
+      },
+      "present_tags": {
+        "demo.model_type": "credit_default",
+        "demo.model_version": "v1",
+        "demo.experiment_id": "lgbm_missing_tags",
+        "demo.standard_version": "0.9.0",
+        "demo.lib": "lightgbm"
+      }
+    }
+  },
+  "compare_runs": {
+    "ok": true,
+    "baseline": {
+      "run_id": "4d801664e8164f06ada999def15e0e81",
+      "run_name": "v1.baseline",
+      "contract_ok": true
+    },
+    "metrics_compared": [
+      "roc_auc",
+      "pr_auc",
+      "log_loss",
+      "brier"
+    ],
+    "lower_is_better": [
+      "brier",
+      "log_loss"
+    ],
+    "runs": [
+      {
+        "run_id": "9e6ebc8b94814eaf8aceac7a0190c9f0",
+        "run_name": "v1.lgbm_monotonic",
+        "status": "FINISHED",
+        "contract_ok": true,
+        "contract_missing": [],
+        "metrics": {
+          "roc_auc": {
+            "value": 0.7896977943505877,
+            "baseline": 0.7799171821145222,
+            "delta": 0.009780612236065522,
+            "relative_delta": 0.012540577974635963,
+            "improved": true
+          },
+          "pr_auc": {
+            "value": 0.37242992626354277,
+            "baseline": 0.3131941339431742,
+            "delta": 0.059235792320368574,
+            "relative_delta": 0.18913442462851585,
+            "improved": true
+          },
+          "log_loss": {
+            "value": 0.22586596185921418,
+            "baseline": 0.23449394437662152,
+            "delta": -0.008627982517407345,
+            "relative_delta": -0.036794052572845605,
+            "improved": true
+          },
+          "brier": {
+            "value": 0.06107919402745954,
+            "baseline": 0.06415717852547972,
+            "delta": -0.0030779844980201865,
+            "relative_delta": -0.047975683606438196,
+            "improved": true
+          }
+        }
+      },
+      {
+        "run_id": "92e1a17052554dbe8b2ac9b215e1e1eb",
+        "run_name": "v1.lgbm_missing_tags",
+        "status": "FAILED",
+        "contract_ok": false,
+        "contract_missing": [
+          "demo.data_snapshot"
+        ],
+        "metrics": {
+          "roc_auc": {
+            "value": 0.7829298904359538,
+            "baseline": 0.7799171821145222,
+            "delta": 0.003012708321431634,
+            "relative_delta": 0.003862856711610761,
+            "improved": true
+          },
+          "pr_auc": {
+            "value": 0.3632782519238968,
+            "baseline": 0.3131941339431742,
+            "delta": 0.0500841179807226,
+            "relative_delta": 0.15991397204715793,
+            "improved": true
+          },
+          "log_loss": {
+            "value": 0.22845218737222958,
+            "baseline": 0.23449394437662152,
+            "delta": -0.00604175700439194,
+            "relative_delta": -0.025765087539694642,
+            "improved": true
+          },
+          "brier": {
+            "value": 0.06177126248799349,
+            "baseline": 0.06415717852547972,
+            "delta": -0.002385916037486231,
+            "relative_delta": -0.03718860605035298,
+            "improved": true
+          }
+        }
+      }
+    ]
+  }
+}
