@@ -1,0 +1,39 @@
+# CI: no secrets needed. Lint, skill validation, tests and compose config.
+name: ci
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  checks:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    env:
+      MLFLOW_DISABLE_AGENT_HINT: "1"
+      MLFLOW_DISABLE_TELEMETRY: "true"
+      DO_NOT_TRACK: "true"
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
+        with:
+          version: "0.12.15"
+          python-version: "3.12"
+      - name: Install pinned dev dependencies
+        run: |
+          uv venv .venv
+          uv pip install --no-deps -r platform/requirements/dev.txt
+          echo "$PWD/.venv/bin" >> "$GITHUB_PATH"
+      - name: Ruff
+        run: |
+          ruff check .
+          ruff format --check .
+      - name: Validate skills
+        run: python scripts/validate_skills.py
+      - name: Pytest
+        run: pytest -q
+      - name: docker compose config
+        run: docker compose config --quiet
