@@ -15,6 +15,7 @@ claude                                                # trust folder, approve st
 claude mcp list                                       # standards-mcp ... ✔ Connected
 ```
 
+- `make demo-reset` restarts the containers, so an open Claude Code session loses `standards-mcp`: run `/mcp` → select it → **Reconnect** (or restart `claude`).
 - After every rehearsal, run `make demo-reset` again: it removes rehearsal experiment folders (e.g. `lgbm_shallow`) and reseeds, so the live run IDs are fresh and the scaffold step works again.
 - Terminal font ≥ 18 pt; two panes: **left** Claude Code, **right** a shell. Browser tab on <http://localhost:5050>.
 - Keep the [README troubleshooting table](README.md#troubleshooting) open in a tab.
@@ -136,7 +137,7 @@ make promote RUN=<run_id of v1.lgbm_missing_tags> ALIAS=challenger CONFIRM=yes  
 | Problem | Do this |
 |---|---|
 | Claude Code cannot reach the model (network) | Switch to the right pane and run the FALLBACK commands. |
-| `standards-mcp` not connected | `docker compose restart standards-mcp`, then `/mcp` → reconnect. |
+| `standards-mcp` not connected (e.g. after `make demo-reset`) | `make doctor`; if the server is up, `/mcp` → `standards-mcp` → Reconnect. Else `docker compose restart standards-mcp` first. |
 | A run name already exists from rehearsal | Use another experiment id, e.g. `lgbm_shallow2`. |
 | MLflow UI slow | Use `get_run` / `compare_runs` output instead. |
 | Everything is broken | `make reset && make up && make seed` (~30 s with images built). |

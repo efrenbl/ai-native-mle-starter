@@ -167,6 +167,8 @@ make demo-reset                                  # DESTRUCTIVE: reset + drop reh
 | Files in `lakehouse/` owned by root (Linux) | The Makefile runs containers as your UID. If you ran `docker compose` directly, prefix `HOST_UID=$(id -u) HOST_GID=$(id -g)`. |
 | Windows | Use WSL2 with the repo on the Linux filesystem; Docker Desktop with the WSL2 backend. Native PowerShell is not supported. |
 | Want to run tests outside Docker on macOS | LightGBM needs OpenMP: `brew install libomp`, then `uv venv -p 3.12 && uv pip install --no-deps -r platform/requirements/dev.txt && .venv/bin/pytest`. |
+| `standards-mcp` shows failed in an open session after `make reset`/`demo-reset` | The container restarted. In Claude Code: `/mcp` → `standards-mcp` → Reconnect. |
+| Two clones show each other's runs | The Compose project name is fixed (`ai-native-mle-starter`), so clones share the MLflow volumes. Run one checkout at a time, or `make reset` before switching. |
 | Start over | `make reset && make up && make seed`. |
 
 ## Versions
