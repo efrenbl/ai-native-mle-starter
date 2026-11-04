@@ -37,6 +37,9 @@ flowchart TB
     W["make train · make promote<br/>(the only write paths, behind a permission prompt)"] -. writes .-> PL
 ```
 
+How it works at run time (topology, review, training, promotion, SQL guards, the loop):
+**[`docs/architecture.md`](docs/architecture.md)**.
+
 | Layer | Folder | What it gives the agent |
 |---|---|---|
 | 1. Platform | `platform/`, `docker-compose.yml`, `lakehouse/` | Where work lives: MLflow (tracking + registry) and parquet (a local stand-in for a lakehouse). |
