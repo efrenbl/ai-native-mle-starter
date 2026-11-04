@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "permissions": {
+    "defaultMode": "default",
+    "allow": [
+      "mcp__standards-mcp__get_standard",
+      "mcp__standards-mcp__list_experiments",
+      "mcp__standards-mcp__get_run",
+      "mcp__standards-mcp__compare_runs",
+      "mcp__standards-mcp__check_run_contract",
+      "mcp__standards-mcp__query_lakehouse",
+      "Bash(make help)",
+      "Bash(make up)",
+      "Bash(make down)",
+      "Bash(make seed)",
+      "Bash(make doctor)",
+      "Bash(make status)",
+      "Bash(make test)",
+      "Bash(make skills)",
+      "Bash(make train *)",
+      "Bash(make scaffold *)"
+    ],
+    "ask": [
+      "Bash(make promote *)",
+      "Bash(make reset)"
+    ],
+    "deny": [
+      "Edit(/lakehouse/**)",
+      "Edit(/standard/standard.yaml)",
+      "Read(./.env)"
+    ]
+  },
+  "enabledMcpjsonServers": [
+    "standards-mcp"
+  ]
+}
