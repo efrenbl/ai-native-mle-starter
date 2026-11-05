@@ -9,7 +9,7 @@ export HOST_UID := $(shell id -u)
 export HOST_GID := $(shell id -g)
 RUN_JOB := $(COMPOSE) --profile jobs run --rm trainer
 
-.PHONY: help up down seed train scaffold promote test skills doctor reset status demo-reset
+.PHONY: help up down seed train scaffold promote test skills doctor reset status demo-reset logs-mcp
 
 help: ## Show this help
 	@grep -hE '^[a-zA-Z_-]+:.*## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*## "}; {printf "  \033[36mmake %-16s\033[0m %s\n", $$1, $$2}'
@@ -51,6 +51,9 @@ doctor: ## Check Docker, ports, MLflow, the MCP endpoint and the Claude Code CLI
 
 status: ## Show container status
 	$(COMPOSE) ps
+
+logs-mcp: ## Follow the standards-mcp audit log: one line per tool call the agent makes
+	@$(COMPOSE) logs -f --no-log-prefix --since 1s standards-mcp | grep --line-buffered ' audit '
 
 reset: ## DESTRUCTIVE: stop everything, delete MLflow volumes and generated parquet
 	$(COMPOSE) --profile jobs --profile test --profile gateway down -v

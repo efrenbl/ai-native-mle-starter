@@ -18,6 +18,7 @@ claude mcp list                                       # standards-mcp ... ✔ Co
 - `make demo-reset` restarts the containers, so an open Claude Code session loses `standards-mcp`: run `/mcp` → select it → **Reconnect** (or restart `claude`).
 - After every rehearsal, run `make demo-reset` again: it removes rehearsal experiment folders (e.g. `lgbm_shallow`) and reseeds, so the live run IDs are fresh and the scaffold step works again.
 - Terminal font ≥ 18 pt; two panes: **left** Claude Code, **right** a shell. Browser tab on <http://localhost:5050>.
+- Optional third pane: `make logs-mcp` shows one audit line per MCP tool call, live (tool, arguments, ok/error, time). In Claude Code, `Ctrl+O` shows the full tool inputs and outputs.
 - Keep the [README troubleshooting table](README.md#troubleshooting) open in a tab.
 - **Fallback for everything:** the right-hand shell runs every step with plain `make` commands.
 
@@ -38,6 +39,7 @@ ls; sed -n '1,40p' standard/standard.yaml
 ```
 Left pane, in Claude Code: `/mcp`
 **Audience sees:** `standards-mcp` connected with six tools. Point out: no write tools exist.
+If the `make logs-mcp` pane is open, every later step prints its tool calls there: the agent only reads.
 FALLBACK: `claude mcp list` in the right pane, or show `mcp/standards_mcp/server.py`.
 
 ### 01:30 – 04:00 · Scaffold an experiment (skill: scaffold-experiment)

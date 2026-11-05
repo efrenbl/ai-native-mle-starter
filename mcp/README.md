@@ -54,6 +54,20 @@ uv run --with mcp==1.30.0 scripts/verify_mcp.py   # calls every tool over HTTP
 This repo pins the maintained 1.x line (`1.30.0`), which keeps `FastMCP`, because it is the
 API most docs and examples still show. Migrating is mostly the import and constructor.
 
+### Audit log
+
+Every tool call writes one line to the server's stderr: tool, arguments (truncated),
+`ok`, the error code if any, and the time it took. Follow it with `make logs-mcp`:
+
+```
+19:02:11 audit tool=check_run_contract args={"run":"v1.lgbm_missing_tags"} ok=true 41ms
+19:02:12 audit tool=query_lakehouse args={"sql":"DROP VIEW features"} ok=false error=query_rejected 1ms
+```
+
+`ok` is whether the tool answered, not whether the run passed the contract. Calls that fail
+MCP argument validation (e.g. `max_rows=9999`) are rejected before the tool runs and do not
+appear. Health probes and per-request transport lines are filtered out.
+
 ## Optional: the reference `memory` server
 
 JSON has no comments, so the optional memory server lives in

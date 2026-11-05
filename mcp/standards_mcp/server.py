@@ -8,12 +8,21 @@ prompt) runs explicitly.
 Run it:
     python -m standards_mcp.server                 # streamable HTTP on 0.0.0.0:8765/mcp
     python -m standards_mcp.server --transport stdio
+
+Every tool call is written to stderr as one audit line (tool, arguments, outcome, time):
+    make logs-mcp
 """
 
 from __future__ import annotations
 
 import argparse
+import functools
+import json
+import logging
 import os
+import sys
+import time
+from collections.abc import Callable
 from pathlib import Path
 from typing import Annotated, Any
 
@@ -28,6 +37,60 @@ from starlette.responses import JSONResponse
 
 from mle_starter import lakehouse
 from mle_starter.standard import check_tags, list_local_experiments, load_standard, repo_root
+
+AUDIT_ARGS_MAX = 240
+
+audit_log = logging.getLogger("standards_mcp.audit")
+
+
+def _setup_logging() -> None:
+    """One readable line per tool call; drop the per-request transport chatter and health probes."""
+    if not audit_log.handlers:
+        handler = logging.StreamHandler(sys.stderr)
+        handler.setFormatter(logging.Formatter("%(asctime)s audit %(message)s", datefmt="%H:%M:%S"))
+        audit_log.addHandler(handler)
+        audit_log.setLevel(logging.INFO)
+        audit_log.propagate = False
+    for noisy in ("mcp.server.lowlevel.server", "mcp.server.streamable_http"):
+        logging.getLogger(noisy).setLevel(logging.WARNING)
+    access = logging.getLogger("uvicorn.access")
+    if not any(isinstance(f, _HealthzFilter) for f in access.filters):
+        access.addFilter(_HealthzFilter())
+
+
+class _HealthzFilter(logging.Filter):
+    def filter(self, record: logging.LogRecord) -> bool:
+        return "/healthz" not in record.getMessage()
+
+
+def _fmt_args(kwargs: dict[str, Any]) -> str:
+    text = json.dumps({k: v for k, v in kwargs.items() if v is not None}, default=str, separators=(",", ":"))
+    return text if len(text) <= AUDIT_ARGS_MAX else text[: AUDIT_ARGS_MAX - 3] + "..."
+
+
+def audited(fn: Callable[..., dict[str, Any]]) -> Callable[..., dict[str, Any]]:
+    """Log `tool=<name> args=<json> ok=<bool> [error=<code>] <ms>ms` for every call. Never changes the result."""
+
+    @functools.wraps(fn)
+    def wrapper(*args: Any, **kwargs: Any) -> dict[str, Any]:
+        start = time.perf_counter()
+        try:
+            out = fn(*args, **kwargs)
+        except Exception as err:
+            ms = (time.perf_counter() - start) * 1000
+            audit_log.info("tool=%s args=%s ok=false error=%s %.0fms", fn.__name__, _fmt_args(kwargs),
+                           type(err).__name__, ms)  # fmt: skip
+            raise
+        ms = (time.perf_counter() - start) * 1000
+        ok = bool(out.get("ok")) if isinstance(out, dict) else True
+        err = f" error={out['error'].get('code')}" if not ok and isinstance(out.get("error"), dict) else ""
+        audit_log.info("tool=%s args=%s ok=%s%s %.0fms", fn.__name__, _fmt_args(kwargs), str(ok).lower(), err, ms)
+        return out
+
+    return wrapper
+
+
+_setup_logging()
 
 READ_ONLY = ToolAnnotations(readOnlyHint=True, destructiveHint=False, idempotentHint=True, openWorldHint=False)
 
@@ -103,6 +166,7 @@ def _run_summary(client: MlflowClient, r, std: dict[str, Any], exp_names: dict[s
 
 
 @mcp.tool(annotations=READ_ONLY)
+@audited
 def get_standard() -> dict[str, Any]:
     """Return the repo's ML standard (standard/standard.yaml) as JSON: version, folder layout,
     supported libraries and estimators, MLflow experiment/run naming, the required `demo.*`
@@ -116,6 +180,7 @@ def get_standard() -> dict[str, Any]:
 
 
 @mcp.tool(annotations=READ_ONLY)
+@audited
 def list_experiments(
     model_type: Annotated[
         str | None, Field(description="Filter to one model type, e.g. 'credit_default'. Omit for all.")
@@ -155,6 +220,7 @@ def list_experiments(
 
 
 @mcp.tool(annotations=READ_ONLY)
+@audited
 def get_run(
     run: Annotated[str, Field(description="MLflow run id (32 hex chars) or run name like 'v1.baseline'.")],
 ) -> dict[str, Any]:
@@ -191,6 +257,7 @@ def get_run(
 
 
 @mcp.tool(annotations=READ_ONLY)
+@audited
 def compare_runs(
     runs: Annotated[list[str], Field(min_length=1, max_length=10, description="Run ids or run names to compare.")],
     baseline: Annotated[str, Field(description="Run id or run name of the baseline, e.g. 'v1.baseline'.")],
@@ -249,6 +316,7 @@ def compare_runs(
 
 
 @mcp.tool(annotations=READ_ONLY)
+@audited
 def check_run_contract(
     run: Annotated[str, Field(description="MLflow run id (32 hex chars) or run name like 'v1.baseline'.")],
 ) -> dict[str, Any]:
@@ -276,6 +344,7 @@ def check_run_contract(
 
 
 @mcp.tool(annotations=READ_ONLY)
+@audited
 def query_lakehouse(
     sql: Annotated[
         str,

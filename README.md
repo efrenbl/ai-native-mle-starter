@@ -134,6 +134,8 @@ trust the folder and approve `standards-mcp`. That approval step is Claude Code'
 against project files that add MCP servers; `enabledMcpjsonServers` in `.claude/settings.json`
 only takes effect once the folder is trusted.
 
+To watch the agent's tool calls live: `make logs-mcp` (one audit line per call: tool, arguments, ok/error, time).
+
 To call every tool from a script (same HTTP endpoint Claude uses):
 `uv run --with mcp==1.30.0 scripts/verify_mcp.py`.
 
@@ -144,6 +146,7 @@ make scaffold MV=v1 EXP=lgbm_shallow             # new experiment from _TEMPLATE
 make train EXP=model_versions/v1/lgbm_shallow    # the only way runs get written
 make promote RUN=<run_id> ALIAS=challenger       # dry run; add CONFIRM=yes to apply
 make test                                        # ruff + skill validation + pytest, in Docker
+make logs-mcp                                    # follow the MCP audit log (one line per tool call)
 make down                                        # stop (keeps MLflow data)
 make reset                                       # DESTRUCTIVE: delete MLflow volumes and generated data
 make demo-reset                                  # DESTRUCTIVE: reset + drop rehearsal experiments + up + seed + doctor

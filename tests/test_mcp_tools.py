@@ -117,3 +117,21 @@ def test_query_lakehouse_validates_max_rows(seeded):
 
     res = anyio.run(_run)
     assert res.isError  # typed parameter: le=500
+
+
+def test_every_tool_call_writes_one_audit_line(seeded, caplog):
+    import logging
+
+    from standards_mcp.server import audit_log
+
+    audit_log.addHandler(caplog.handler)
+    try:
+        with caplog.at_level(logging.INFO, logger=audit_log.name):
+            call("check_run_contract", {"run": "v1.lgbm_missing_tags"})
+            call("query_lakehouse", {"sql": "DROP VIEW features"})
+    finally:
+        audit_log.removeHandler(caplog.handler)
+    lines = [r.getMessage() for r in caplog.records if r.name == audit_log.name]
+    assert len(lines) == 2, lines
+    assert lines[0].startswith('tool=check_run_contract args={"run":"v1.lgbm_missing_tags"} ok=true')
+    assert lines[1].startswith("tool=query_lakehouse args=") and "ok=false error=query_rejected" in lines[1]
