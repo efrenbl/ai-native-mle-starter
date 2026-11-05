@@ -35,3 +35,6 @@ evals/node_modules/
 
 # optional memory MCP server data
 .memory/
+
+# uv run creates this from pyproject.toml; the real locks are platform/requirements/*.txt
+uv.lock
