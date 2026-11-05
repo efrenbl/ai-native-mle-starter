@@ -38,17 +38,32 @@ docker compose --profile gateway stop gateway
 Requires Node.js (for `npx`) and Python 3 on the host. Cost: 3 cases × 2 prompts,
 plus one rubric grading call per case and prompt, on `eval-model`.
 
-Example `delta.py` output shape:
+## Reference result
+
+One real run on 2026-11-04, `eval-model` = `anthropic/claude-haiku-4-5-20251001`,
+promptfoo 0.125.1, fixture `fixtures/review_v1_evidence.json`. About 27k tokens in total
+(22k for answers, 4k for grading), 12 s.
 
 ```
 check                     baseline  with_skill    delta
 case_pass                      33%        100%    +67pp
 deterministic                  80%        100%    +20pp
 rubric                         67%        100%    +33pp
-  names_missing_tag            100%        100%     +0pp
-  ...
+  cites_broken_run              0%        100%   +100pp
+  cites_compared_run          100%        100%     +0pp
+  cites_run_id                 33%        100%    +67pp
+  claims_no_writes            100%        100%     +0pp
+  mentions_log_loss           100%        100%     +0pp
+  names_invalid_tag           100%        100%     +0pp
+  names_missing_tag           100%        100%     +0pp
+  not_a_dump                  100%        100%     +0pp
 ```
-(The numbers above only show the format; run it to get yours.)
+
+How to read it: without the skill the model already **finds** the problems (missing
+`demo.data_snapshot`, invalid `demo.standard_version`). What it skips is the
+**procedure**: it does not cite the full run IDs, and the judge flagged that it never says
+the fix goes in the training code/config followed by a new `make train`. The skill adds
+evidence and procedure, not detection. Model outputs vary, so your numbers may differ.
 
 ## Lessons this module already taught
 
